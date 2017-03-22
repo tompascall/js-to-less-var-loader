@@ -2,12 +2,21 @@ function createVariables (content) {
     if (this && typeof this.cacheable === 'function') {
         this.cacheable();
     }
-    if ({}.toString.call(content) !== '[object Object]') {
-        throw Error('You have to make loader eat a simple hash object for getting LESS variables');
+
+    let parsedContent;
+    try {
+        parsedContent = JSON.parse(content);
+        if ({}.toString.call(parsedContent) !== '[object Object]') {
+            throw Error();
+        }
     }
-    const keys = Object.keys(content);
+    catch (e) {
+        throw Error('You have to make loader eat a JSON object for getting LESS variables');
+    }
+
+    const keys = Object.keys(parsedContent);
     return keys.reduce( (result, key) => {
-        result += `@${key}: ${content[key]};\n`;
+        result += `@${key}: ${parsedContent[key]};\n`;
         return result;
     }, '');
 }
