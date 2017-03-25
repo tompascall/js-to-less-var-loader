@@ -1,20 +1,44 @@
-import loader from '../index';
+import Loader from '../index';
 
 describe('js-to-less-vars-loader', () => {
-    it('throws error if content is not a json object', () => {
-        expect(loader).toThrow();
-        let caller = () => {
-            loader({asdf : 'asdf'});
-        };
-        expect(caller).toThrow();
+    const loader = new Loader();
+
+    describe('module', () => {
+        it('exports a function', () => {
+           expect(typeof Loader).toEqual('function'); 
+        });
+
+        it('is a contructor which containes createModuleString function as method', () => {
+            expect(typeof loader.createModuleString).toEqual('function');
+        });
+    });
+    
+    describe('createModuleString', () => {
+        it('gives back a string with param', () => {
+            expect(loader.createModuleString('fakeValue').indexOf('fakeValue')).not.toEqual(-1);
+        }); 
+
+        it('returns different kind of module string based on context.version', () => {
+            const context = { version: 1};
+            const value = 'fakeValue';
+            expect(loader.createModuleString.call(context, value)).toEqual(`module.exports = ${value};`);
+            context.version = 2;
+            expect(loader.createModuleString.call(context, value)).toEqual(`export default ${value};`);
+        });
     });
 
-    it('transforms a hash into less variable strings', () => {
-        const colors = {
-            git_primary: "#1ab394",
-            git_warning: "#f8ac59"
-        }
+    describe('divide', () => {
+        const content = "require('colors.js');\n" +
+            ".someClass { color: #fff;}"; 
+        it('divides the require (if it exists) from the content', () => {
+            expect(loader.divideContent(content)[0]).toEqual("require('colors.js')");
+            expect(loader.divideContent(content)[1]).toEqual("\n.someClass { color: #fff;}");
+        });
+    });
 
-       expect(loader(JSON.stringify(colors))).toBe("@git_primary: #1ab394;\n@git_warning: #f8ac59;\n");
-   }); 
+    describe('transformContent', () => {
+        it('description', () => {
+            
+        });
+    });
 });
