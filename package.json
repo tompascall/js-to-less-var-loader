@@ -4,8 +4,8 @@
   "description": "Webpack loader for sharing data amongst less and javascript modules",
   "main": "index.js",
   "scripts": {
-    "test": "jest",
-    "test:watch": "jest --watch"
+    "test": "jest --config jest.config",
+    "test:watch": "jest --watch --config jest.config"
   },
   "repository": {
     "type": "git",
