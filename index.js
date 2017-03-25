@@ -1,9 +1,3 @@
-    // const keys = Object.keys(parsedContent);
-    // return keys.reduce( (result, key) => {
-    //     result += `@${key}: ${parsedContent[key]};\n`;
-    //     return result;
-    // }, '');
-
 const requireReg = /require\s*\(['|"](.+)['|"]\)\s*;?/g;
 
 const Loader = function () {
@@ -28,13 +22,40 @@ Loader.prototype = {
                 content.slice(endIndex + 1)
             ];
         }
+        else {
+            return ['', content];
+        }
     },
 
-    getModule (modulePart) {
+    getModulePath (modulePart) {
         const reg = new RegExp(requireReg, 'g');
         const match =  reg.exec(modulePart);
-        return require(match[1]);
+        const modulePaths = [];
+        modulePaths.push(match[1]);
+        return modulePaths;
+    },
+
+    getVarData (modulePath) {
+        return require(modulePath[0]);
+    },
+
+    transformToLessVars (varData) {
+        const keys = Object.keys(varData);
+        return keys.reduce( (result, key) => {
+            result += `@${key}: ${varData[key]};\n`;
+            return result;
+        }, '');
+    },
+
+    mergeVarsToContent (content) {
+        const [ moduleData, lessContent ] = this.divideContent(content);
+        const modulePath = this.getModulePath(moduleData);
+        const varData = this.getVarData(modulePath);
+        const lessVars = this.transformToLessVars(varData);
+        return lessVars + lessContent;
+        
     }
+
 };
 
 module.exports = Loader;
