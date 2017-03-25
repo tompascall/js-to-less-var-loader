@@ -1,14 +1,10 @@
+const path = require('path');
+
 const requireReg = /require\s*\(['|"](.+)['|"]\)\s*;?/g;
 
-const Loader = function (content) {
-    const merged = this.mergeVarsToContent(content);
-    return this.createModuleString(merged);
-};
-
-Loader.prototype = {
+const operator = {
     createModuleString (exportValue) {
-        const module = this.version && this.version >= 2 ? `export default ${exportValue};` : `module.exports = ${exportValue};`;
-        return module;
+        return exportValue;
     },
 
     divideContent (content) {
@@ -37,8 +33,8 @@ Loader.prototype = {
         return modulePaths;
     },
 
-    getVarData (modulePath) {
-        return require(modulePath[0]);
+    getVarData (modulePath, webpackContext) {
+        return require(path.join(webpackContext.context, modulePath[0]));
     },
 
     transformToLessVars (varData) {
@@ -49,17 +45,24 @@ Loader.prototype = {
         }, '');
     },
 
-    mergeVarsToContent (content) {
+    mergeVarsToContent (content, webpackContext) {
         const [ moduleData, lessContent ] = this.divideContent(content);
         if (moduleData) {
             const modulePath = this.getModulePath(moduleData);
-            const varData = this.getVarData(modulePath);
+            const varData = this.getVarData(modulePath, webpackContext);
             const lessVars = this.transformToLessVars(varData);
             return lessVars + lessContent;
         }
         else return content;   
     }
-
 };
 
-module.exports = Loader;
+exports.operator = operator;
+
+const loader = function (content) {
+    const webpackContext = this;
+    const merged = operator.mergeVarsToContent(content, webpackContext);
+    return operator.createModuleString(merged, webpackContext);
+};
+
+exports.default = loader;
