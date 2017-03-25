@@ -36,6 +36,13 @@ describe('js-to-less-vars-loader', () => {
         });
     });
 
+    describe('getModule', () => {
+        it('gets js module', () => {
+            const module = loader.getModule('require("./mocks/colors.js")')
+            expect(module).toEqual({ white: '#fff', black: '#000'});
+        });
+    });
+
     describe('transformContent', () => {
         it('description', () => {
             

@@ -4,6 +4,8 @@
     //     return result;
     // }, '');
 
+const requireReg = /require\s*\(['|"](.+)['|"]\)\s*;?/g;
+
 const Loader = function () {
 };
 
@@ -14,20 +16,24 @@ Loader.prototype = {
     },
 
     divideContent (content) {
-        if (typeof content === 'string') {
-            const reg = /require\s*\(['|"].+['|"]\)\s*;?/g;
-            let match;
-            let endIndex;
-            while (match = reg.exec(content)) {
-                endIndex = reg.lastIndex - 1;
-            }
-            if (typeof endIndex !== 'undefined') {
-                return [
-                    content.slice(0, endIndex),
-                    content.slice(endIndex + 1)
-                ];
-            }
+        let match;
+        let endIndex;
+        const reg = new RegExp(requireReg, 'g');
+        while (match = reg.exec(content)) {
+            endIndex = reg.lastIndex - 1;
         }
+        if (typeof endIndex !== 'undefined') {
+            return [
+                content.slice(0, endIndex),
+                content.slice(endIndex + 1)
+            ];
+        }
+    },
+
+    getModule (modulePart) {
+        const reg = new RegExp(requireReg, 'g');
+        const match =  reg.exec(modulePart);
+        return require(match[1]);
     }
 };
 
