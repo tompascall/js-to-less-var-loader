@@ -1,6 +1,8 @@
 const requireReg = /require\s*\(['|"](.+)['|"]\)\s*;?/g;
 
-const Loader = function () {
+const Loader = function (content) {
+    const merged = this.mergeVarsToContent(content);
+    return this.createModuleString(merged);
 };
 
 Loader.prototype = {
@@ -49,11 +51,13 @@ Loader.prototype = {
 
     mergeVarsToContent (content) {
         const [ moduleData, lessContent ] = this.divideContent(content);
-        const modulePath = this.getModulePath(moduleData);
-        const varData = this.getVarData(modulePath);
-        const lessVars = this.transformToLessVars(varData);
-        return lessVars + lessContent;
-        
+        if (moduleData) {
+            const modulePath = this.getModulePath(moduleData);
+            const varData = this.getVarData(modulePath);
+            const lessVars = this.transformToLessVars(varData);
+            return lessVars + lessContent;
+        }
+        else return content;   
     }
 
 };
