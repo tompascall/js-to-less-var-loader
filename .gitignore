@@ -1,3 +1,5 @@
+.DS_Store
+
 # Logs
 logs
 *.log
@@ -17,6 +19,8 @@ lib-cov
 
 # Coverage directory used by tools like istanbul
 coverage
+coverage.data
+.coveralls.yml
 
 # Dependency directories
 node_modules
