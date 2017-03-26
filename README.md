@@ -1,4 +1,4 @@
-![Build Status](https://travis-ci.org/tompascall/jos-to-less-var-loader.svg?branch=master) [![Coverage Status](https://coveralls.io/repos/github/tompascall/js-to-less-var-loader/badge.svg?branch=master)](https://coveralls.io/github/tompascall/js-to-less-var-loader?branch=master)
+![Build Status](https://travis-ci.org/tompascall/js-to-less-var-loader.svg?branch=master) [![Coverage Status](https://coveralls.io/repos/github/tompascall/js-to-less-var-loader/badge.svg?branch=master)](https://coveralls.io/github/tompascall/js-to-less-var-loader?branch=master)
 
 ## js-to-less-var-loader
 
