@@ -107,5 +107,10 @@ describe('js-to-less-vars-loader', () => {
 
             expect(operator.mergeVarsToContent(content, context)).toEqual(lessVars + lessContent);
         });
+
+        it('gives back content as is if there is no requre', () => {
+            const content = ".someClass { color: #fff;}";
+            expect(operator.mergeVarsToContent(content, context)).toEqual(content);
+        });
     });
 });
