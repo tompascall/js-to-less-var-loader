@@ -20,20 +20,19 @@ describe('js-to-less-vars-loader', () => {
 
         });
 
-        it('calls createModuleString with the result of mergeVarsToContent and loader context', () => {
-            spyOn(operator, 'createModuleString');
+        it('returns the result of mergeVarsToContent', () => {
             const content = 'require("./mocks/colors.js")\n' + '.someClass {\ncolor: @nice;\n}';
             const merged = operator.mergeVarsToContent(content, context);
-            loader.call(context, content);
-            expect(operator.createModuleString).toHaveBeenCalledWith(merged, context);
+            const result = loader.call(context, content);
+            expect(result).toEqual(merged);
         });
     });
 
-    describe('divide', () => {
-        const content = "require('colors.js');\n" +
-            ".someClass { color: #fff;}";
+    describe('divideContent', () => {
         it('divides the require (if it exists) from the content', () => {
-            expect(operator.divideContent(content)[0]).toEqual("require('colors.js')");
+            const content = "require('colors.js');\n" +
+                ".someClass { color: #fff;}";
+            expect(operator.divideContent(content)[0]).toEqual("require('colors.js');");
             expect(operator.divideContent(content)[1]).toEqual("\n.someClass { color: #fff;}");
         });
 
@@ -42,11 +41,22 @@ describe('js-to-less-vars-loader', () => {
             expect(operator.divideContent(content)[0]).toEqual("");
             expect(operator.divideContent(content)[1]).toEqual(content);
         });
+
+        it('handles more requires when divide', () => {
+            const content = "require('colors.js');\n" +
+                "require('sizes.js');\n" +
+                ".someClass { color: #fff;}";
+            expect(operator.divideContent(content)[0]).toEqual("require('colors.js');\n" + "require('sizes.js');");
+            expect(operator.divideContent(content)[1]).toEqual("\n.someClass { color: #fff;}");
+            
+        });
     });
 
     describe('getModulePath', () => {
-        it('extracts module path into an array', () => {
-           expect(operator.getModulePath('require("./mocks/colors.js")')).toEqual(["./mocks/colors.js"]);
+        it('extracts module paths into an array', () => {
+            expect(operator.getModulePath('require("./mocks/colors.js")')).toEqual(["./mocks/colors.js"]);
+
+            expect(operator.getModulePath('require("./mocks/colors.js");\n' + 'require("./mocks/sizes.js");')).toEqual(["./mocks/colors.js", "./mocks/sizes.js"]);
         });
     });
 
@@ -55,6 +65,13 @@ describe('js-to-less-vars-loader', () => {
             const context = { context: path.resolve()};
             const varData = operator.getVarData(['./mocks/colors.js'], context);
             expect(varData).toEqual({ white: '#fff', black: '#000'});
+        });
+
+        it('merges module data if there are more requests', () => {
+            const context = { context: path.resolve()};
+            const varData = operator.getVarData(['./mocks/colors.js', './mocks/sizes.js'], context);
+            expect(varData).toEqual({ white: '#fff', black: '#000', small: '10px', large: '50px'});
+            
         });
     });
 

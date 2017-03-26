@@ -3,21 +3,17 @@ const path = require('path');
 const requireReg = /require\s*\(['|"](.+)['|"]\)\s*;?/g;
 
 const operator = {
-    createModuleString (exportValue) {
-        return exportValue;
-    },
-
     divideContent (content) {
         let match;
         let endIndex;
         const reg = new RegExp(requireReg, 'g');
         while (match = reg.exec(content)) {
-            endIndex = reg.lastIndex - 1;
+            endIndex = reg.lastIndex;
         }
         if (typeof endIndex !== 'undefined') {
             return [
                 content.slice(0, endIndex),
-                content.slice(endIndex + 1)
+                content.slice(endIndex)
             ];
         }
         else {
@@ -27,14 +23,19 @@ const operator = {
 
     getModulePath (modulePart) {
         const reg = new RegExp(requireReg, 'g');
-        const match =  reg.exec(modulePart);
         const modulePaths = [];
-        modulePaths.push(match[1]);
+        let match;
+        while (match = reg.exec(modulePart)) {
+            modulePaths.push(match[1]);
+        }
         return modulePaths;
     },
 
     getVarData (modulePath, webpackContext) {
-        return require(path.join(webpackContext.context, modulePath[0]));
+        return modulePath.reduce( (accumulator, currentPath) => {
+            const moduleData = require(path.join(webpackContext.context, currentPath));
+            return Object.assign(accumulator, moduleData);
+        }, {});
     },
 
     transformToLessVars (varData) {
@@ -62,7 +63,7 @@ exports.operator = operator;
 const loader = function (content) {
     const webpackContext = this;
     const merged = operator.mergeVarsToContent(content, webpackContext);
-    return operator.createModuleString(merged, webpackContext);
+    return merged;
 };
 
 exports.default = loader;
