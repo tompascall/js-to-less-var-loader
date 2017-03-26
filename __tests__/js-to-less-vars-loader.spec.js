@@ -1,6 +1,6 @@
 import path from 'path';
 const loader = require('../index').default;
-import { operator } from '../index';
+const { operator } = require('../index');
 
 describe('js-to-less-vars-loader', () => {
 
@@ -48,30 +48,40 @@ describe('js-to-less-vars-loader', () => {
                 ".someClass { color: #fff;}";
             expect(operator.divideContent(content)[0]).toEqual("require('colors.js');\n" + "require('sizes.js');");
             expect(operator.divideContent(content)[1]).toEqual("\n.someClass { color: #fff;}");
-            
+        });
+
+        it('handles the form of request("asdf").someProp', () => {
+            const content = "require('corners.js').typeOne;\n" + ".someClass { color: #fff;}";
+            expect(operator.divideContent(content)[0]).toEqual("require('corners.js').typeOne;");
         });
     });
 
     describe('getModulePath', () => {
-        it('extracts module paths into an array', () => {
-            expect(operator.getModulePath('require("./mocks/colors.js")')).toEqual(["./mocks/colors.js"]);
+        it('extracts module paths and methodName into an array', () => {
+            expect(operator.getModulePath('require("./mocks/colors.js");\n')).toEqual([{path: "./mocks/colors.js"}]);
 
-            expect(operator.getModulePath('require("./mocks/colors.js");\n' + 'require("./mocks/sizes.js");')).toEqual(["./mocks/colors.js", "./mocks/sizes.js"]);
+            expect(operator.getModulePath('require("./mocks/colors.js");\n' + 'require("./mocks/sizes.js");')).toEqual([{path: "./mocks/colors.js"}, {path:"./mocks/sizes.js"}]);
+
+            expect(operator.getModulePath('require("./mocks/corners.js").typeTwo;\n')).toEqual([{path: "./mocks/corners.js", methodName: 'typeTwo'}]);
         });
     });
 
     describe('getVarData', () => {
+        const context = { context: path.resolve()};
+
         it('gets variable data by modulePath with context', () => {
-            const context = { context: path.resolve()};
-            const varData = operator.getVarData(['./mocks/colors.js'], context);
+            const varData = operator.getVarData([{path: './mocks/colors.js' }], context);
             expect(varData).toEqual({ white: '#fff', black: '#000'});
         });
 
         it('merges module data if there are more requests', () => {
-            const context = { context: path.resolve()};
-            const varData = operator.getVarData(['./mocks/colors.js', './mocks/sizes.js'], context);
+            const varData = operator.getVarData([{path:'./mocks/colors.js'}, {path:'./mocks/sizes.js'}], context);
             expect(varData).toEqual({ white: '#fff', black: '#000', small: '10px', large: '50px'});
-            
+        });
+
+        it('handles methodName if it is given', () => {
+            const varData = operator.getVarData([{ path:'./mocks/corners.js', methodName: 'typeOne'}], context);
+            expect(varData).toEqual({ tiny: '1%', medium: '3%'});
         });
     });
 

@@ -1,19 +1,19 @@
 const path = require('path');
 
-const requireReg = /require\s*\(['|"](.+)['|"]\)\s*;?/g;
+const requireReg = /require\s*\(['|"](.+)['|"]\)(?:\.([^;\s]+))?[;\s]/g;
 
 const operator = {
     divideContent (content) {
         let match;
-        let endIndex;
+        let lastIndex;
         const reg = new RegExp(requireReg, 'g');
         while (match = reg.exec(content)) {
-            endIndex = reg.lastIndex;
+            lastIndex = reg.lastIndex;
         }
-        if (typeof endIndex !== 'undefined') {
+        if (typeof lastIndex !== 'undefined') {
             return [
-                content.slice(0, endIndex),
-                content.slice(endIndex)
+                content.slice(0, lastIndex),
+                content.slice(lastIndex)
             ];
         }
         else {
@@ -26,14 +26,17 @@ const operator = {
         const modulePaths = [];
         let match;
         while (match = reg.exec(modulePart)) {
-            modulePaths.push(match[1]);
+            modulePaths.push({
+                path: match[1],
+                methodName: match[2]
+            });
         }
         return modulePaths;
     },
 
     getVarData (modulePath, webpackContext) {
         return modulePath.reduce( (accumulator, currentPath) => {
-            const moduleData = require(path.join(webpackContext.context, currentPath));
+            const moduleData = (currentPath.methodName)? require(path.join(webpackContext.context, currentPath.path))[currentPath.methodName] : require(path.join(webpackContext.context, currentPath.path));
             return Object.assign(accumulator, moduleData);
         }, {});
     },
@@ -54,7 +57,7 @@ const operator = {
             const lessVars = this.transformToLessVars(varData);
             return lessVars + lessContent;
         }
-        else return content;   
+        else return content;
     }
 };
 
