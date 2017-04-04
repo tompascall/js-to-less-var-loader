@@ -1,6 +1,6 @@
 {
   "name": "js-to-less-var-loader",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Webpack loader for sharing data amongst less and javascript modules",
   "main": "index.js",
   "scripts": {
